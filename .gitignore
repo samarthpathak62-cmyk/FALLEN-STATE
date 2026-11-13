@@ -1,0 +1,19 @@
+# Godot 4
+.godot/
+.import/
+export_presets.cfg
+*.translation
+*.tmp
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Builds (bade files Git me na jayein)
+build/
+dist/
+exports/
+*.pck
+*.zip
