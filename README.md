@@ -1,42 +1,40 @@
 # FALLEN STATE
 
-**"A city that never sleeps."**
+**"A city that never sleeps."** — Godot 4 me ek living open-world crime game.
 
-Ek third-person open-world action game — Godot 4 me. Yeh repo sirf idea nahi hai:
-isme **chalne wala playable prototype** + **poora development plan** dono hain.
-
-![FALLEN STATE key art](docs/art/key-art.png)
+Yeh repo ab **real assets wala playable vertical slice** hai (sirf graybox nahi):
+rigged humans with 86 animations, modular city kit, 3D gaadiyan, synth audio,
+cinematic post-processing, aur **weak laptop ke liye quality presets**.
 
 ---
 
-## Abhi kya ban chuka hai (playable, 2 minute me chal jayega)
+## Chalao (3 step)
 
-| System | Status |
+1. [godotengine.org/download](https://godotengine.org/download) → **Godot 4.4+** (standard, non-.NET)
+2. Godot → **Import** → `project.godot` → **Import & Edit**
+3. ▶ Run
+
+> **Pehli baar 1-3 minute lag sakta hai** — 70MB ke character models import ho rahe hote hain
+> (86 animations × 2 models). Uske baad instant. Agar "importing" dikhe to ruk jao, band mat karo.
+
+---
+
+## Andar kya hai
+
+| System | Detail |
 |---|---|
-| 3rd person player (walk / sprint / jump / mouse camera) | ✅ |
-| Arcade driving + enter/exit vehicle (4 cars) | ✅ |
-| Procedural city district (4×4 blocks, roads, buildings, park, streetlights) | ✅ |
-| **Enterable building** — Corner Store with working door + shop UI | ✅ |
-| 16 NPCs — daily routine (time-based), danger reaction | ✅ |
-| Day/night cycle + sun/sky/fog/ambient lighting | ✅ |
-| Money / shop economy + police heat meter | ✅ |
-| 3-step mission chain + in-world objective marker | ✅ |
-| Random world event (road accident, help ya ignore karo) | ✅ |
-| Save / load (F5 / F9, JSON) | ✅ |
-| HUD (clock, money, heat, objective, prompts, toasts) | ✅ |
-
-Sab kuch **GDScript code se banaya gaya hai** — koi external asset, koi .blend file
-nahi chahiye. Isliye yeh 100% tumhare system par chalega.
-
----
-
-## Start kaise karein (3 step)
-
-1. **[godotengine.org/download](https://godotengine.org/download)** se **Godot 4.4+** (standard, non-.NET) download karo. Zip extract karo, install jaisa kuch nahi chahiye.
-2. Godot kholo → **Import** → **Browse** → is folder ka `project.godot` choose karo → **Import & Edit**.
-3. Upar-right me ▶ (Run) dabao. Bas.
-
-> Pehli baar me Godot 30-60 second lagayega (import + script cache). Uske baad instant.
+| **Real characters** | Quaternius Universal Base Character — 14.5k tris, 65 bones, **86 animations** (idle/jog/sprint/jump/drive/crouch/punch…) |
+| **Living city** | 13×13 tile district (104m) — KayKit modular kit: 8 building types, roads, junction, streetlights, props |
+| **Driving** | 5 gaadiyan (sedan/hatchback/taxi/police/wagon), gear-less arcade physics, engine audio, headlights, weather grip |
+| **NPCs** | 8/14/22 (quality ke hisaab se) — time-based routine (commute/nightlife), gaadi dekh kar bhaagna, distance LOD |
+| **Day/night** | 24 min = 1 din, sun angle + sky gradient + fog + ambient, 19:30 se raat |
+| **Weather** | clear / rain / fog — rain me grip 0.72, fog density 5× |
+| **Audio** | Kenney ambience + footsteps + synthesized engine/siren/rain + 69s ambient music |
+| **Look** | ACES tonemap + fog + vignette + film grain shader + emissive streetlights |
+| **Money/economy** | Corner Store kiosk (E) — coffee $5, intel $200 |
+| **Missions** | 3-step chapter + objective marker + random accident event |
+| **Save/Load** | F5 / F9 (JSON) |
+| **Quality presets** | LOW / MEDIUM / HIGH — F10 se cycle, ya Esc menu se |
 
 ---
 
@@ -44,59 +42,73 @@ nahi chahiye. Isliye yeh 100% tumhare system par chalega.
 
 | Key | Kaam |
 |---|---|
-| `W A S D` | chalna / gaadi chalaana |
-| `Shift` | daudna / gaadi tez |
-| `Space` | jump (only on foot) |
+| `W A S D` | chalna / driving |
+| `Shift` | daudna / tez |
+| `Alt` | dheere chalo (city dekhne ke liye) |
+| `Space` | jump |
 | `Mouse` | camera |
-| `E` | interact (shop counter, accident help) |
+| `E` | interact (Corner Store, accident help) |
 | `F` | gaadi me baitho / utro |
-| `H` | horn (gaadi me) |
+| `H` | horn |
 | `F5` / `F9` | save / load |
-| `Esc` | mouse free karo (Godot editor me wapas jaane ke liye) |
+| `F10` | graphics preset (LOW → MEDIUM → HIGH) |
+| `Esc` | pause menu / mouse free |
 
-**Pehla kaam jo karna hai:** game me ghumo, phir `scripts/world/main.gd` kholo
-aur `NPC_COUNT = 16` ko `40` kar do. Difference feel karo. Yahi tuning loop hai.
+---
+
+## Bina GPU wale laptop par (important)
+
+Default preset **MEDIUM** hai. Agar 30 FPS se neeche jaaye:
+
+1. `F10` ek baar dabao → **LOW**
+2. LOW me: shadows off, MSAA off, glow off, sirf 3 street lights, 8 NPC
+3. Window chhota karo (`1280×720` se `960×540`)
+
+Details + tuning: **[docs/PERFORMANCE.md](docs/PERFORMANCE.md)**
 
 ---
 
 ## Folder structure
 
 ```
-project.godot              # engine settings (renderer, autoload)
-scenes/                    # 4 chhoti scenes (main, player, car, npc)
+project.godot
+assets/
+  city/          KayKit city kit (gltf + atlas texture)  [CC0]
+  characters/    human_male.glb / human_female.glb       [CC0]
+  audio/ music/  Kenney + synthesized                   [CC0]
+  licenses/      SOURCES.md — har asset ka source
+scenes/          main, player, car, npc (root + script only)
 scripts/
-  core/game.gd             # AUTOLOAD: money, time, heat, flags, save/load, keys
-  world/main.gd            # assembly: lighting -> world -> player -> HUD -> missions
-  world/world_builder.gd   # procedurally district banata hai
-  world/day_night.gd       # 24h clock + sun + sky + fog
-  world/shop_counter.gd    # enterable building ka interaction + UI
-  player/player.gd         # 3rd person controller + vehicle hook
-  vehicles/car.gd          # arcade driving
-  npc/npc.gd               # routine + reaction AI
-  systems/mission_system.gd
-  systems/world_events.gd
-  systems/incident.gd
-  ui/hud.gd
-docs/
-  00-KYA-KARNA-HAI.md      # ⭐ pehle yeh padho — engine, plan, tools, galtiyan
-  ROADMAP.md               # M0 -> M10 milestones, 12 mahine ka plan
-  TECH-NOTES.md            # architecture + "naya feature kaise add karein"
-  art/key-art.png
+  core/          game.gd (autoload) · kits.gd (assets) · audio.gd (Sound)
+  world/         main.gd · city.gd · day_night.gd · weather.gd · kiosk.gd
+  player/        player.gd
+  vehicles/      car.gd
+  npc/           npc.gd
+  systems/       missions.gd · events.gd · incident.gd
+  ui/            hud.gd · pause_menu.gd
+shaders/         post_vignette · post_grain
+docs/            00-KYA-KARNA-HAI · ASSETS · PERFORMANCE · ROADMAP · TECH-NOTES
 ```
 
 ---
 
-## Documentation
+## Docs
 
-- **[docs/00-KYA-KARNA-HAI.md](docs/00-KYA-KARNA-HAI.md)** — Godot vs Unity, kya use karna hai, 30 din ka plan, 10 galtiyan
-- **[docs/ROADMAP.md](docs/ROADMAP.md)** — milestone-by-milestone, "kab kya banega"
-- **[docs/TECH-NOTES.md](docs/TECH-NOTES.md)** — code kahan hai, naya system kaise jodein
+- **[docs/00-KYA-KARNA-HAI.md](docs/00-KYA-KARNA-HAI.md)** — plan, engine choice, 30 din, 10 galtiyan
+- **[docs/ASSETS.md](docs/ASSETS.md)** — asset list + **realistic assets kaise laayein (exact links)**
+- **[docs/PERFORMANCE.md](docs/PERFORMANCE.md)** — weak laptop par 60 FPS
+- **[docs/ROADMAP.md](docs/ROADMAP.md)** — M0 → M10
+- **[docs/TECH-NOTES.md](docs/TECH-NOTES.md)** — code samjho, naya feature jodo
 
 ---
 
-## License note (important)
+## Credits
 
-Is repo me `LICENSE` **AGPL-3.0** hai. AGPL ka matlab: agar tum game release karo,
-toh **source code public karna padega**. Commercial game bechna hai to license
-**MIT / proprietary** me badalna hoga (Godot engine khud MIT hai, usme koi dikkat
-nahi). `docs/00-KYA-KARNA-HAI.md` me iska detail hai.
+City kit: **KayKit (Kay Lousberg)** · Characters & animations: **Quaternius** ·
+Audio: **Kenney** (kenney.nl) · Engine: **Godot**.
+Details + licenses: [assets/licenses/SOURCES.md](assets/licenses/SOURCES.md)
+
+## License note
+
+Repo code: **AGPL-3.0** (`LICENSE`). Assets: **CC0**.
+Game bechna hai → code ka license MIT ya proprietary karna hoga (`docs/00` me detail).

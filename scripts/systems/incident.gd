@@ -1,9 +1,9 @@
 extends Node3D
 ##
-## INCIDENT — ek "dynamic world event" (abhi ke liye: sadak durghatna)
+## INCIDENT — dynamic world event (abhi: sadak durghatna)
 ##
-## Player ignore kar sakta hai (event khud gayab ho jayega) ya E dabakar
-## madad kar sakta hai (paisa + police heat kam). Yeh CHOICE hi living world hai.
+## Player ignore kar sakta hai (75s me gayab) ya E se madad kar sakta hai.
+## Yeh chhoti si choice hi "living world" ka asli ehsaas deti hai.
 ##
 
 const LIFETIME := 75.0
@@ -11,7 +11,7 @@ const LIFETIME := 75.0
 var resolved := false
 var life := LIFETIME
 var fire_light: OmniLight3D
-var fire_mesh: MeshInstance3D
+var fire: MeshInstance3D
 var flicker := 0.0
 
 
@@ -23,20 +23,17 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if resolved:
 		return
-
 	life -= delta
 	if life <= 0.0:
 		Game.say("Accident scene clear ho gaya — koi madad karne nahi aaya.")
 		queue_free()
 		return
-
-	# Aag ka flicker (sasta illusion, bada effect)
-	flicker += delta * 12.0
+	flicker += delta * 13.0
 	if fire_light != null:
-		fire_light.light_energy = 2.0 + sin(flicker) * 0.5 + randf() * 0.3
-	if fire_mesh != null:
-		var s: float = 1.0 + sin(flicker * 0.7) * 0.12
-		fire_mesh.scale = Vector3(s, s, s)
+		fire_light.light_energy = 2.4 + sin(flicker) * 0.6 + randf() * 0.4
+	if fire != null:
+		var s: float = 1.0 + sin(flicker * 0.8) * 0.14
+		fire.scale = Vector3(s, s, s)
 
 
 func get_prompt_text() -> String:
@@ -49,74 +46,54 @@ func interact(_player) -> void:
 	resolved = true
 	Game.add_money(120)
 	Game.add_heat(-12.0)
-	Game.say("Tumne madad ki. +$120, police heat kam hui. Log tumhe yaad rakhenge.")
+	Game.say("Tumne madad ki. +$120, police heat kam. Log yaad rakhenge.")
 	queue_free()
 
 
 func _build() -> void:
-	# Tuta hua car
-	var wreck := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(1.9, 0.75, 4.2)
-	wreck.mesh = box
-	wreck.position = Vector3(0.0, 0.5, 0.0)
-	wreck.rotation.y = 0.55
-	wreck.material_override = _mat(Color(0.32, 0.29, 0.27))
-	add_child(wreck)
-
-	# Cabin
-	var cabin := MeshInstance3D.new()
-	var cbox := BoxMesh.new()
-	cbox.size = Vector3(1.6, 0.5, 2.0)
-	cabin.mesh = cbox
-	cabin.position = Vector3(0.1, 1.02, -0.1)
-	cabin.rotation.y = 0.55
-	cabin.material_override = _mat(Color(0.08, 0.08, 0.09))
-	add_child(cabin)
+	# Tuti hui gaadi (kit ka model, tedha khada)
+	var wreck := Kits.spawn_city("car_hatchback", self, Vector3(0.0, 1.15, 0.0), 28.0, false, 1.1)
+	if wreck != null:
+		var box := Kits.local_aabb(wreck)
+		wreck.position.y = -box.position.y * wreck.scale.y + 0.15
 
 	# Aag
-	fire_mesh = MeshInstance3D.new()
-	var sphere := SphereMesh.new()
-	sphere.radius = 0.65
-	sphere.height = 1.3
-	fire_mesh.mesh = sphere
-	fire_mesh.position = Vector3(0.5, 0.95, 0.6)
-	var fire_mat := StandardMaterial3D.new()
-	fire_mat.albedo_color = Color(1.0, 0.45, 0.1, 0.8)
-	fire_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	fire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	fire_mat.emission_enabled = true
-	fire_mat.emission = Color(1.0, 0.5, 0.12)
-	fire_mat.emission_energy_multiplier = 3.5
-	fire_mesh.material_override = fire_mat
-	add_child(fire_mesh)
+	fire = MeshInstance3D.new()
+	var sph := SphereMesh.new()
+	sph.radius = 0.7
+	sph.height = 1.5
+	fire.mesh = sph
+	fire.position = Vector3(0.6, 0.9, 0.4)
+	var fmat := StandardMaterial3D.new()
+	fmat.albedo_color = Color(1.0, 0.45, 0.1, 0.85)
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fmat.emission_enabled = true
+	fmat.emission = Color(1.0, 0.5, 0.12)
+	fmat.emission_energy_multiplier = 4.0
+	fire.material_override = fmat
+	add_child(fire)
 
 	fire_light = OmniLight3D.new()
-	fire_light.position = Vector3(0.5, 1.3, 0.6)
+	fire_light.position = Vector3(0.6, 1.4, 0.4)
 	fire_light.light_color = Color(1.0, 0.5, 0.2)
-	fire_light.light_energy = 2.5
-	fire_light.omni_range = 12.0
+	fire_light.light_energy = 3.0
+	fire_light.omni_range = 14.0
+	fire_light.shadow_enabled = false
 	add_child(fire_light)
 
-	# Upar ka marker (door se dikh jaye)
+	# Upar ka marker (dur se dikhe)
 	var beam := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
-	cyl.top_radius = 1.0
-	cyl.bottom_radius = 1.0
-	cyl.height = 12.0
+	cyl.top_radius = 1.1
+	cyl.bottom_radius = 1.1
+	cyl.height = 14.0
 	beam.mesh = cyl
-	beam.position = Vector3(0.0, 6.0, 0.0)
-	var beam_mat := StandardMaterial3D.new()
-	beam_mat.albedo_color = Color(1.0, 0.35, 0.15, 0.25)
-	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	beam_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	beam.material_override = beam_mat
+	beam.position.y = 7.0
+	var bmat := StandardMaterial3D.new()
+	bmat.albedo_color = Color(1.0, 0.35, 0.12, 0.22)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	beam.material_override = bmat
 	add_child(beam)
-
-
-func _mat(color: Color) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.albedo_color = color
-	m.roughness = 0.9
-	return m
